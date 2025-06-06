@@ -11,7 +11,6 @@
             background: #0f1941;
             color: white;
         }
-
         .container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -19,12 +18,10 @@
             max-width: 800px;
             margin: 0 auto;
         }
-
         .card-container {
             perspective: 1000px;
             height: 200px;
         }
-
         .card {
             position: relative;
             width: 100%;
@@ -34,11 +31,12 @@
             transform-style: preserve-3d;
             cursor: pointer;
         }
-
+        .card:hover {
+            transform: scale(1.05);
+        }
         .card-container:hover .card {
             transform: rotateY(180deg);
         }
-
         .card-front, .card-back {
             position: absolute;
             width: 100%;
@@ -54,11 +52,9 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
             background: #ffffff33;
         }
-
         .card-back {
             transform: rotateY(180deg);
         }
-
         .card-title {
             color: #E6FF00;
             font-size: 1.2em;
@@ -67,7 +63,6 @@
             text-transform: lowercase;
             letter-spacing: 1px;
         }
-
         .card-header {
             font-size: 1.3em;
             font-weight: bold;
@@ -75,7 +70,6 @@
             margin-bottom: 15px;
             line-height: 1.2;
         }
-
         .card-description {
             font-size: 0.95em;
             color: #e2e8f0;
@@ -83,48 +77,43 @@
             text-align: center;
             opacity: 0.9;
         }
-
         .card-back .card-description {
             font-size: 0.9em;
             color: #cbd5e0;
         }
-
         /* Mobile responsive */
         @media (max-width: 768px) {
             .container {
                 grid-template-columns: 1fr;
                 gap: 15px;
             }
-            
+
             .card-container {
                 height: 180px;
             }
-            
+
             .card-title {
                 font-size: 1em;
             }
-            
+
             .card-header {
                 font-size: 1.1em;
             }
-            
+
             .card-description {
                 font-size: 0.85em;
             }
         }
-
         /* Subtle glow effect */
         .card-front, .card-back {
-            box-shadow: 
+            box-shadow:
                 0 8px 25px rgba(0,0,0,0.3),
                 inset 0 1px 0 rgba(255,255,255,0.1);
         }
-
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Resources Database Card -->
         <div class="card-container resources-database">
             <div class="card">
                 <div class="card-front">
@@ -147,8 +136,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- NSO's Database Card -->
         <div class="card-container nso-database">
             <div class="card">
                 <div class="card-front">
@@ -171,8 +158,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Work Monitor Card -->
         <div class="card-container work-monitor">
             <div class="card">
                 <div class="card-front">
@@ -195,8 +180,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Global Intelligence Card -->
         <div class="card-container global-intelligence">
             <div class="card">
                 <div class="card-front">
@@ -220,14 +203,13 @@
             </div>
         </div>
     </div>
-
     <script>
         // Looker Studio Community Visualization Integration
         if (typeof dscc !== 'undefined') {
             dscc.subscribeToData(function(message) {
                 // Process Looker Studio data here
                 console.log('Data received from Looker Studio:', message);
-                
+
                 // You can customize the cards based on incoming data
                 const data = message.tables.DEFAULT;
                 if (data && data.length > 0) {
@@ -235,51 +217,65 @@
                 }
             }, {transform: dscc.objectTransform});
         }
-
         function updateCardsWithData(data) {
             // Function to update card content with Looker Studio data
             // This allows the visualization to be dynamic based on your data source
-            
+
             const cards = document.querySelectorAll('.card-container');
             data.forEach((row, index) => {
                 if (cards[index]) {
                     const front = cards[index].querySelector('.card-front');
                     const back = cards[index].querySelector('.card-back');
-                    
+
                     if (row.dimensions && row.dimensions.length > 0) {
                         front.querySelector('.card-title').textContent = row.dimensions[0] || '';
                         front.querySelector('.card-header').textContent = row.dimensions[1] || '';
                         front.querySelector('.card-description').textContent = row.dimensions[2] || '';
                     }
-                    
+
                     if (row.metrics && row.metrics.length > 0) {
                         // You can use metrics for dynamic values, colors, etc.
                     }
                 }
             });
         }
-
-        // Add interaction tracking for Looker Studio
+        // Dashboard URLs - Replace these with your actual dashboard URLs
+        const dashboardUrls = {
+            'resources-database': 'https://lookerstudio.google.com/reporting/e3db1aa7-509b-476c-8f98-e15b7d4674cf/page/p_3qtjdf9vdd?pli=1',
+            'nso-database': 'https://lookerstudio.google.com/reporting/c0c2dd32-ec0c-4e19-923a-4fc787c635e1/page/Hag5E',
+                'work-monitor': 'https://lookerstudio.google.com/reporting/8f62ebb8-98e6-4d06-991c-98fcfa2d11ce/page/p_05ylbgbpqd',
+            'global-intelligence': 'https://your-domain.com/global-intelligence-dashboard'
+        };
+        // Add click functionality to redirect to dashboards
         document.addEventListener('click', function(e) {
             const cardContainer = e.target.closest('.card-container');
-            if (cardContainer && typeof dscc !== 'undefined' && dscc.sendInteraction) {
-                const cardClass = cardContainer.className.split(' ')[1];
-                dscc.sendInteraction({
-                    type: 'CARD_CLICK',
-                    data: { card: cardClass }
-                });
+            if (cardContainer) {
+                // Get the card type from class name
+                const cardClass = cardContainer.className.split(' ').find(cls => cls !== 'card-container');
+
+                // Add interaction tracking for Looker Studio
+                if (typeof dscc !== 'undefined' && dscc.sendInteraction) {
+                    dscc.sendInteraction({
+                        type: 'CARD_CLICK',
+                        data: { card: cardClass }
+                    });
+                }
+
+                // Redirect to respective dashboard
+                if (dashboardUrls[cardClass]) {
+                    window.open(dashboardUrls[cardClass], '_blank');
+                }
             }
         });
-
         // Enhanced hover effects
         document.addEventListener('DOMContentLoaded', function() {
             const cards = document.querySelectorAll('.card-container');
-            
+
             cards.forEach(card => {
                 card.addEventListener('mouseenter', function() {
                     this.style.transform = 'scale(1.02)';
                 });
-                
+
                 card.addEventListener('mouseleave', function() {
                     this.style.transform = 'scale(1)';
                 });
