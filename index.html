@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Card Flip Visualization</title>
+    <style>
+        body {
+            font-family: 'Google Sans', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            height: 200px;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .card-container:hover .card {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .metric-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .metric-description {
+            font-size: 0.9em;
+            opacity: 0.8;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        /* Color variations for different cards */
+        .card-container:nth-child(2n) .card-front {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .card-container:nth-child(2n) .card-back {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .card-container:nth-child(3n) .card-front {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .card-container:nth-child(3n) .card-back {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .card-container:nth-child(4n) .card-front {
+            background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+        }
+
+        .card-container:nth-child(4n) .card-back {
+            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .card-container {
+                height: 180px;
+            }
+            
+            .metric-value {
+                font-size: 2em;
+            }
+        }
+
+        /* Hover hint */
+        .hover-hint {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+
+        .card-container:hover .hover-hint {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="cardContainer">
+        <!-- Cards will be dynamically generated here -->
+    </div>
+
+    <script>
+        // Sample data - in a real Looker Studio visualization, this would come from the data source
+        const sampleData = [
+            {
+                label: "Total Revenue",
+                value: "$125,430",
+                description: "Monthly revenue increased by 12% compared to last month",
+                icon: "💰"
+            },
+            {
+                label: "Active Users",
+                value: "8,542",
+                description: "Daily active users showing consistent growth trend",
+                icon: "👥"
+            },
+            {
+                label: "Conversion Rate",
+                value: "3.8%",
+                description: "Conversion rate improved by 0.5% this quarter",
+                icon: "📈"
+            },
+            {
+                label: "Customer Satisfaction",
+                value: "94%",
+                description: "Based on 1,200+ customer surveys and feedback",
+                icon: "⭐"
+            },
+            {
+                label: "Order Volume",
+                value: "2,847",
+                description: "Total orders processed this month across all channels",
+                icon: "📦"
+            },
+            {
+                label: "Response Time",
+                value: "1.2s",
+                description: "Average API response time improved by 15%",
+                icon: "⚡"
+            }
+        ];
+
+        // Function to create cards
+        function createCards(data) {
+            const container = document.getElementById('cardContainer');
+            container.innerHTML = '';
+
+            data.forEach((item, index) => {
+                const cardHtml = `
+                    <div class="card-container">
+                        <div class="card">
+                            <div class="card-front">
+                                <div class="hover-hint">ℹ️</div>
+                                <div class="icon">${item.icon}</div>
+                                <div class="metric-value">${item.value}</div>
+                                <div class="metric-label">${item.label}</div>
+                            </div>
+                            <div class="card-back">
+                                <div class="icon">${item.icon}</div>
+                                <div class="metric-label">${item.label}</div>
+                                <div class="metric-description">${item.description}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        // Initialize cards
+        createCards(sampleData);
+
+        // Looker Studio Community Visualization Integration
+        // This would be the actual integration code for Looker Studio
+        if (typeof dscc !== 'undefined') {
+            // This is the callback that will be called when new data is available
+            dscc.subscribeToData(function(message) {
+                const data = message.tables.DEFAULT;
+                const processedData = [];
+
+                // Process Looker Studio data
+                data.forEach(row => {
+                    processedData.push({
+                        label: row.dimensions ? row.dimensions[0] : 'Metric',
+                        value: row.metrics ? row.metrics[0] : '0',
+                        description: row.dimensions && row.dimensions[1] ? row.dimensions[1] : 'No description available',
+                        icon: getIconForMetric(row.dimensions ? row.dimensions[0] : 'default')
+                    });
+                });
+
+                createCards(processedData);
+            }, {transform: dscc.objectTransform});
+        }
+
+        // Helper function to assign icons based on metric names
+        function getIconForMetric(metricName) {
+            const iconMap = {
+                'revenue': '💰',
+                'users': '👥',
+                'conversion': '📈',
+                'satisfaction': '⭐',
+                'orders': '📦',
+                'response': '⚡',
+                'clicks': '👆',
+                'impressions': '👁️',
+                'sales': '💼',
+                'growth': '📊'
+            };
+
+            const lowerMetric = metricName.toLowerCase();
+            for (const key in iconMap) {
+                if (lowerMetric.includes(key)) {
+                    return iconMap[key];
+                }
+            }
+            return '📊'; // Default icon
+        }
+
+        // Add some interactive enhancements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click analytics (for Looker Studio integration)
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.card-container')) {
+                    const cardElement = e.target.closest('.card-container');
+                    const cardIndex = Array.from(cardElement.parentNode.children).indexOf(cardElement);
+                    
+                    // In real Looker Studio integration, you would send interaction data
+                    if (typeof dscc !== 'undefined' && dscc.sendInteraction) {
+                        dscc.sendInteraction({
+                            type: 'CARD_CLICK',
+                            data: { cardIndex: cardIndex }
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
